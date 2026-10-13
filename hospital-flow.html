@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Capacity Control Room · Synesis 26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F1F4F3;--surface:#7ff33c;--ink:#0E2A33;--muted:#58707A;--line:#CBD6D8;
+  --teal:#22eaf4;--on-teal:#FFFFFF;--amber:#A86200;--red:#B42318;--green:#2A7449;--wash:#E3ECEC;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1E24;--surface:#17292F;--ink:#E4EEF0;--muted:#93AAB1;--line:#2B4249;
+    --teal:#3FB8AF;--on-teal:#06201F;--amber:#F0B34A;--red:#FF8A7A;--green:#6FCF97;--wash:#1D343B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1E24;--surface:#17292F;--ink:#E4EEF0;--muted:#93AAB1;--line:#2B4249;
+  --teal:#3FB8AF;--on-teal:#06201F;--amber:#F0B34A;--red:#e21c02;--green:#6FCF97;--wash:#1D343B;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:inherit;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.45;}
+.num{font-variant-numeric:tabular-nums;}
+.wrap{max-width:1100px;margin:0 auto;padding:0 14px 40px;}
+h1{font-size:1.25rem;margin:0;line-height:1.2;}
+h2{font-size:1.05rem;margin:0 0 10px;}
+h3{font-size:1rem;margin:0;line-height:1.3;}
+p{margin:0;}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;}
+.bar .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;}
+.clock{font-size:1.05rem;font-weight:700;}
+.sub{color:var(--muted);font-size:.85rem;}
+button{font:inherit;cursor:pointer;}
+.btn{border:1px solid var(--ink);background:transparent;color:var(--ink);padding:8px 14px;border-radius:8px;min-height:40px;}
+.btn:hover{background:var(--wash);}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--on-teal);font-weight:700;}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.surge{border-color:var(--red);color:var(--red);font-weight:700;}
+.btn.surge:hover{background:var(--red);color:var(--bg);}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:2px;}
+label.tog{display:flex;gap:6px;align-items:center;font-size:.9rem;min-height:40px;}
+select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--ink);background:var(--surface);color:var(--ink);min-height:40px;}
+section{margin-top:22px;}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:3px solid var(--ink);margin-top:14px;}
+.kpi{padding:10px 8px 4px 0;}
+.kpi b{display:block;font-size:1.6rem;line-height:1.1;}
+
+.kpi span{font-size:.8rem;color:var(--muted);}
+.kpi.hot b{color:var(--red);}
+.recs{display:grid;gap:10px;}
+.rec{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--teal);border-radius:10px;padding:12px 14px;}
+.rec.p1{border-left-color:var(--red);}
+.rec.p2{border-left-color:var(--amber);}
+.rtop{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
+.pri{font-size:.78rem;font-weight:700;padding:1px 8px;border-radius:99px;background:var(--wash);}
+.p1 .pri{color:var(--red);} .p2 .pri{color:var(--amber);}
+.why{margin-top:6px;}
+.meta{margin-top:6px;font-size:.9rem;color:var(--muted);}
+.meta b{color:var(--ink);}
+.acts{display:flex;gap:8px;margin-top:10px;}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:14px;color:var(--muted);}
+.alerts{display:grid;gap:6px;margin-top:10px;}
+.alert{font-size:.92rem;padding:6px 10px;border-radius:8px;background:var(--wash);border-left:4px solid var(--amber);}
+.alert.hi{border-left-color:var(--red);}
+.cols{display:grid;gap:22px;}
+@media(min-width:900px){.cols{grid-template-columns:1.2fr 1fr;} .kpi b{font-size:2rem;}}
+.chartbox{overflow-x:auto;}
+svg.chart{width:100%;min-width:520px;height:auto;display:block;}
+svg .gl{stroke:var(--line);stroke-width:1;}
+svg .tx{fill:var(--muted);font-size:10px;font-family:inherit;}
+svg .bar-a{fill:var(--muted);opacity:.55;}
+svg .exp{stroke:var(--muted);stroke-dasharray:3 3;fill:none;stroke-width:1.5;}
+svg .fc{stroke:var(--teal);fill:none;stroke-width:2.5;}
+svg .band{fill:var(--teal);opacity:.16;}
+svg .now{stroke:var(--ink);stroke-width:1.5;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:6px;}
+.ward{padding:9px 0;border-top:1px solid var(--line);}
+.wh{display:flex;justify-content:space-between;}
+.track{position:relative;height:14px;background:var(--wash);border-radius:7px;margin:6px 0 4px;overflow:visible;}
+.fill{display:block;height:100%;border-radius:7px;background:var(--teal);}
+.fill.amber{background:var(--amber);} .fill.red{background:var(--red);}
+.tick{position:absolute;top:-4px;width:3px;height:22px;border-radius:2px;}
+.tick.staff{background:var(--ink);}
+.tick.proj{background:transparent;border:2px solid var(--ink);width:10px;height:10px;top:2px;border-radius:50%;margin-left:-5px;}
+.wf{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--muted);}
+.wf .boardtag{color:var(--red);font-weight:700;}
+.eq{display:grid;grid-template-columns:110px 1fr 48px;gap:8px;align-items:center;padding:5px 0;font-size:.92rem;}
+.eq .track{margin:0;height:10px;}
+table{width:100%;border-collapse:collapse;font-size:.92rem;}
+th,td{text-align:right;padding:7px 4px;border-top:1px solid var(--line);}
+th:first-child,td:first-child{text-align:left;}
+th{font-weight:700;color:var(--muted);font-size:.82rem;border-top:0;}
+.good{color:var(--green);font-weight:700;} .bad{color:var(--red);font-weight:700;}
+.log{font-size:.88rem;display:grid;gap:4px;}
+.log div{padding:4px 0;border-top:1px solid var(--line);}
+.log time{color:var(--muted);margin-right:6px;}
+details{margin-top:22px;border-top:1px solid var(--line);padding-top:10px;}
+summary{cursor:pointer;font-weight:700;}
+details ul{margin:8px 0 0;padding-left:18px;font-size:.9rem;}
+footer{margin-top:24px;font-size:.82rem;color:var(--muted);}
+@media (prefers-reduced-motion: no-preference){.fill{transition:width .5s;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <div class="title"><h1>Capacity Control Room</h1><div class="clock num" id="clock"></div></div>
+    <div class="row">
+      <button class="btn primary" data-act="play" id="playBtn">Play</button>
+      <button class="btn" data-act="step">+1 hour</button>
+      <select id="speed" aria-label="Simulation speed"><option value="1">1× speed</option><option value="3">3× speed</option></select>
+      <button class="btn surge" data-act="surge">Surge: 6h of heavy arrivals</button>
+      <label class="tog"><input type="checkbox" id="auto"> Auto-approve (demo only)</label>
+      <button class="btn" data-act="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <h2>Recommended actions</h2>
+    <div class="recs" id="recs"></div>
+    <div class="alerts" id="alerts"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>ED arrivals per hour: last 24h and next 12h</h2>
+      <div class="chartbox" id="chart"></div>
+      <div class="legend"><span>Grey bars: actual</span><span>Dashed: typical for this weekday and hour</span><span>Teal: forecast with 90% range</span></div>
+      <p class="sub num" id="mae" style="margin-top:6px"></p>
+    </section>
+    <section>
+      <h2>Staff and equipment</h2>
+      <div id="equip"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Wards</h2>
+    <div class="legend" style="margin:0 0 4px"><span>Bar: occupied beds</span><span>Black tick: staffed limit</span><span>Circle: forecast in 6h</span></div>
+    <div id="wards"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Impact: baseline vs your approvals</h2>
+      <p class="sub" style="margin-bottom:6px">Both hospitals get the identical patient stream. Only one acts on recommendations.</p>
+      <div id="impact"></div>
+    </section>
+    <section>
+      <h2>Decision log</h2>
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+
+  <details>
+    <summary>precription</summary>
+    <ul>
+      <li>Synthetic data: 6 weeks of hourly ED arrivals, with a daily and weekly pattern, train the forecast.</li>
+      <li>Forecast: typical arrivals for each weekday and hour, scaled by a live level that adapts when real arrivals run higher or lower.</li>
+      <li>Patients: arrive with an acuity (1 most urgent). They wait in a queue, get an ED bay, may need CT, and are discharged or admitted. Admitted patients board in the ED until a staffed ward bed exists.</li>
+      <li>Rules: each recommendation is generated from a bottleneck and checked against hard safety limits (nurse ratios, no staff moves out of ICU, Paediatrics or Maternity, only cleared discharges, only stable transfers).</li>
+      <li>Human in the loop: nothing changes until a clinician taps Approve.</li>
+    </ul>
+  </details>
+  <footer>Synthetic data for a hackathon demo. Decision support only, not for clinical use.</footer>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function poisson(rng,l){const L=Math.exp(-l);let k=0,p=1;do{k++;p*=rng();}while(p>L&&k<80);return k-1;}
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+/* ---------- hospital configuration ---------- */
+const WARDS=[
+  {id:'ICU',cap:12,nurses:6,ratio:2,init:7},
+  {id:'Medical',cap:40,nurses:6,ratio:6,init:33},
+  {id:'Surgical',cap:30,nurses:6,ratio:6,init:14},
+  {id:'Paediatrics',cap:16,nurses:4,ratio:4,init:7},
+  {id:'Maternity',cap:14,nurses:3,ratio:5,init:4}
+];
+const WLOS={ICU:72,Medical:60,Surgical:72,Paediatrics:48,Maternity:48};
+const ADM={ICU:.10,Medical:.54,Surgical:.18,Paediatrics:.13,Maternity:.05};
+const ADMIT_RATE=.233;
+const RECIP=['Medical','Surgical'];                 // wards that may receive float nurses
+const OVERFLOW={ICU:['Medical'],Medical:['Surgical'],Surgical:['Medical']}; // safe overflow pairs
+const PROFILE=[.55,.45,.4,.35,.35,.4,.55,.75,.95,1.15,1.3,1.35,1.3,1.25,1.2,1.2,1.25,1.35,1.4,1.35,1.2,1.0,.8,.65];
+const DOW=[.92,1.15,1.05,1.0,1.0,1.05,.95];
+const BASE=3.8, START_DOW=1, START_HR=6, SURGE_MULT=1.6;
+const clock=t=>{const a=START_HR+t;return{d:(((START_DOW+Math.floor(a/24))%7)+7)%7,h:((a%24)+24)%24};};
+const lamTrue=t=>{const c=clock(t);return BASE*PROFILE[c.h]*DOW[c.d];};
+const stamp=t=>{const c=clock(t);return DAYS[c.d]+' '+String(c.h).padStart(2,'0')+':00';};
+const staffedBeds=w=>Math.min(w.cap,w.nurses*w.ratio);
+
+/* ---------- synthetic patients ---------- */
+let pid=0;
+function genPatient(rng,t){
+  const r=rng(); const a=r<.03?1:r<.18?2:r<.58?3:r<.88?4:5;
+  const admit=rng()<[.9,.6,.25,.05,.01][a-1];
+  let ward=null;
+  if(admit){ if(a<=2&&rng()<.2) ward='ICU'; else {const x=rng(); ward=x<.6?'Medical':x<.8?'Surgical':x<.94?'Paediatrics':'Maternity';} }
+  const treat=[4.5,4,3.5,2.5,1.5][a-1]*(.7+.6*rng());
+  const ct=rng()<[.7,.6,.35,.1,.03][a-1];
+  const los=ward?WLOS[ward]*(.4+1.2*rng()):0;
+  return{id:++pid,a,admit,ward,treat,ct,los,delay:Math.floor(rng()*9),stable:rng()<.7,arr:t+rng()};
+}
+function genInpatient(rng,w){return{id:++pid,a:3,los:1+rng()*WLOS[w]*.9,delay:Math.floor(rng()*9),stable:rng()<.7};}
+
+/* ---------- simulator ---------- */
+function newSim(initWards){
+  const wards={};
+  WARDS.forEach(w=>{wards[w.id]={...w,beds:structuredClone(initWards[w.id])};});
+  return{t:0,ed:{bays:24,nurses:5,ratio:4,queue:[],treating:[],boarders:[]},wards,
+    ct:{scanners:2,per:3,backlog:0,extra:0,extraUntil:-1,cap:6,lastProc:0},
+    st:{waitSum:0,waitN:0,board:0,maxQ:0,imbSum:0,imbN:0}};
+}
+function placeBoarders(s){
+  const e=s.ed;
+  e.boarders.sort((x,y)=>x.a-y.a||x.arr-y.arr);
+  e.boarders=e.boarders.filter(p=>{
+    const w=s.wards[p.ward];
+    if(w.beds.length<staffedBeds(w)){w.beds.push({id:p.id,a:p.a,los:p.los,delay:p.delay,stable:p.stable});return false;}
+    return true;
+  });
+}
+function step(s,arrivals){
+  const t=s.t,e=s.ed,ct=s.ct;
+  // ward discharges (cleared patients leave after their pre-rolled delay)
+  for(const w of Object.values(s.wards)){
+    w.beds.forEach(p=>{p.los-=1; if(p.los<=0)p.ready=(p.ready||0)+1;});
+    w.beds=w.beds.filter(p=>!(p.los<=0&&p.ready>p.delay));
+  }
+  // ED treatment progress
+  e.treating.forEach(p=>p.rem-=1);
+  e.treating.filter(p=>p.rem<=0).forEach(p=>{if(p.admit)e.boarders.push(p);});
+  e.treating=e.treating.filter(p=>p.rem>0);
+  placeBoarders(s);
+  // arrivals + CT
+  e.queue.push(...arrivals);
+  const cap=ct.scanners*ct.per+(t<ct.extraUntil?ct.extra:0);
+  const proc=Math.min(ct.backlog,cap); ct.backlog-=proc; ct.lastProc=proc; ct.cap=cap;
+  const ctWait=ct.backlog/Math.max(cap,1);
+  // start treatment (most urgent first)
+  const staffed=Math.min(e.bays,e.nurses*e.ratio);
+  let free=staffed-e.treating.length-e.boarders.length;
+  e.queue.sort((x,y)=>x.a-y.a||x.arr-y.arr);
+  while(free>0&&e.queue.length){
+    const p=e.queue.shift();
+    s.st.waitSum+=Math.max(0,t+.5-p.arr)*60; s.st.waitN++;
+    p.rem=p.treat+(p.ct?ctWait:0); if(p.ct)ct.backlog+=1;
+    e.treating.push(p); free--;
+  }
+  // stats
+  s.st.board+=e.boarders.length;
+  s.st.maxQ=Math.max(s.st.maxQ,e.queue.length);
+  const occ=Object.values(s.wards).map(w=>w.beds.length/w.cap);
+  const m=occ.reduce((a,b)=>a+b,0)/occ.length;
+  s.st.imbSum+=Math.sqrt(occ.reduce((a,b)=>a+(b-m)**2,0)/occ.length)*100; s.st.imbN++;
+  s.t++;
+}
+
+/* ---------- forecasting ---------- */
+function forecast(t,count){
+  const out=[];
+  for(let k=0;k<count;k++){const c=clock(t+k);out.push(app.prof[c.d][c.h]*(1+(app.level-1)*Math.pow(.85,k)));}
+  return out;
+}
+
+/* ---------- recommendation engine ---------- */
+function donorFor(s,wi,exclude){
+  let best=null;
+  for(const id of ['Surgical','Medical']){
+    if(id===exclude)continue;
+    const w=s.wards[id],inf=wi[id];
+    const slack=(w.nurses-1)*w.ratio-Math.max(inf.o,inf.proj)-2;   // hard rule: safe ratio + 2 patient buffer
+    if(slack>=0&&(!best||slack>best.slack))best={id,slack};
+  }
+  return best;
+}
+function analyze(s,F){
+  const e=s.ed,t=s.t,recs=[],alerts=[];
+  const lam3=(F[0]+F[1]+F[2])/3;
+  const occ=e.treating.length+e.boarders.length;
+  const staffed=Math.min(e.bays,e.nurses*e.ratio);
+  const q=e.queue.length;
+  const longest=q?Math.max(...e.queue.map(p=>t-p.arr)):0;
+  const pressure=(q+occ+lam3*2)/staffed;
+  const bb={}; e.boarders.forEach(p=>bb[p.ward]=(bb[p.ward]||0)+1);
+  const wi={};
+  for(const w of Object.values(s.wards)){
+    const o=w.beds.length,ready=w.beds.filter(p=>p.los<=0).length,soon=w.beds.filter(p=>p.los>0&&p.los<=6).length;
+    let inflow=0; for(let k=0;k<6;k++)inflow+=F[k]*ADMIT_RATE*ADM[w.id];
+    wi[w.id]={o,ready,soon,proj:Math.round(o+inflow-ready-soon*.8),staffed:staffedBeds(w),boarders:bb[w.id]||0};
+  }
+  // 1. ED staffing
+  if(e.nurses*e.ratio<e.bays&&(q>=3||pressure>1.05)){
+    const d=donorFor(s,wi,null);
+    if(d){
+      const dw=s.wards[d.id];
+      recs.push({id:'nurse-ED',pri:(q>=8||pressure>1.4)?1:2,
+        title:'Move 1 nurse: '+d.id+' to ED',
+        reason:'ED queue is '+q+' (longest wait '+Math.round(longest*60)+' min) and forecast is '+lam3.toFixed(1)+' arrivals/hr for the next 3h. Only '+staffed+' of '+e.bays+' ED bays are staffed. '+d.id+' uses '+Math.round(wi[d.id].o/(dw.nurses*dw.ratio)*100)+'% of its staffed capacity.',
+        impact:'+'+e.ratio+' staffed ED bays ('+staffed+' to '+(staffed+e.ratio)+')',
+        safety:'Donor ward keeps the safe nurse ratio plus a 2-patient buffer. ICU, Paediatrics and Maternity never donate.',
+        apply:s2=>{s2.wards[d.id].nurses--;s2.ed.nurses++;}});
+    }
+  }
+  // 2. ED boarders waiting for a ward bed
+  for(const id of Object.keys(bb)){
+    const w=s.wards[id],inf=wi[id]; let rem=inf.boarders;
+    if(w.beds.length<inf.staffed)continue;
+    const full='('+inf.o+'/'+w.cap+' beds, '+inf.staffed+' staffed)';
+    if(inf.ready>0){
+      const k=Math.min(inf.ready,rem);
+      recs.push({id:'exp-'+id,pri:inf.boarders>=3?1:2,
+        title:'Expedite '+k+' discharge'+(k>1?'s':'')+' in '+id,
+        reason:inf.boarders+' admitted patient'+(inf.boarders>1?'s are':' is')+' boarding in ED bays for '+id+'. The ward is full '+full+' but '+inf.ready+' patient'+(inf.ready>1?'s':'')+' already cleared for discharge still occupy beds.',
+        impact:'Frees '+k+' bed'+(k>1?'s':'')+' now and returns '+k+' ED bay'+(k>1?'s':'')+' to the queue',
+        safety:'Only patients with a signed discharge order are included. A clinician confirms each one.',
+        apply:s2=>{const w2=s2.wards[id];let c=k;w2.beds=w2.beds.filter(p=>{if(c>0&&p.los<=0){c--;return false;}return true;});placeBoarders(s2);}});
+      rem-=k;
+    }
+    if(rem>0){
+      if(w.beds.length<w.cap&&RECIP.includes(id)){
+        const d=donorFor(s,wi,id);
+        if(d){
+          recs.push({id:'nurse-'+id,pri:2,title:'Move 1 nurse: '+d.id+' to '+id,
+            reason:id+' has physical beds free but only '+inf.staffed+' are staffed, so '+rem+' ED patient'+(rem>1?'s are':' is')+' stuck boarding. '+d.id+' has spare nursing capacity.',
+            impact:'+'+w.ratio+' staffed beds in '+id,
+            safety:'Donor ward keeps the safe nurse ratio plus a 2-patient buffer.',
+            apply:s2=>{s2.wards[d.id].nurses--;s2.wards[id].nurses++;placeBoarders(s2);}});
+          continue;
+        }
+      }
+      let best=null;
+      for(const tid of (OVERFLOW[id]||[])){
+        const tw=s.wards[tid];const free=staffedBeds(tw)-tw.beds.length-(bb[tid]||0);
+        if(free>0&&(!best||free>best.free))best={tid,free};
+      }
+      const lim=id==='ICU'?24:36;
+      if(best){
+        const elig=w.beds.filter(p=>p.stable&&p.los>0&&p.los<=lim);
+        const k=Math.min(3,best.free,elig.length);
+        if(k>0){
+          recs.push({id:'xfer-'+id,pri:2,
+            title:'Transfer '+k+' stable patient'+(k>1?'s':'')+': '+id+' to '+best.tid,
+            reason:id+' is full '+full+' and '+rem+' admitted patient'+(rem>1?'s are':' is')+' waiting in the ED. '+best.tid+' has '+best.free+' free staffed bed'+(best.free>1?'s':'')+'.',
+            impact:'Opens '+k+' bed'+(k>1?'s':'')+' in '+id+' for ED boarders',
+            safety:'Only stable patients within '+lim+'h of discharge or step-down. Receiving ward must accept each transfer.',
+            apply:s2=>{const src=s2.wards[id],dst=s2.wards[best.tid];const room=Math.max(0,staffedBeds(dst)-dst.beds.length);
+              src.beds.filter(p=>p.stable&&p.los>0&&p.los<=lim).sort((a,b)=>a.los-b.los).slice(0,Math.min(k,room)).forEach(p=>{src.beds.splice(src.beds.indexOf(p),1);dst.beds.push(p);});
+              placeBoarders(s2);}});
+        }
+      } else if(!(OVERFLOW[id]||[]).length){
+        alerts.push({hi:true,text:id+' is full with '+rem+' boarding in ED. No safe overflow ward exists: escalate to the bed manager.'});
+      }
+    }
+  }
+  // 3. CT backlog
+  const ctw=s.ct.backlog/Math.max(s.ct.cap,1);
+  if(ctw>=1&&t>=s.ct.extraUntil){
+    recs.push({id:'ct',pri:ctw>=2?1:2,title:'Boost CT throughput for 6 hours',
+      reason:'CT backlog is '+s.ct.backlog+' scans, about '+Math.round(ctw*60)+' min of wait. ED patients cannot be dispositioned until scanned. X-ray is running at '+Math.round(xrayUtil(s)*100)+'%.',
+      impact:'+3 scans/hr; backlog clears in about '+(s.ct.backlog/(s.ct.cap+3)).toFixed(1)+'h',
+      safety:'Queue stays acuity-first. X-ray keeps one radiographer on shift.',
+      apply:s2=>{s2.ct.extra=3;s2.ct.extraUntil=s2.t+6;}});
+  }
+  // 4. Forecast alerts
+  for(const id of Object.keys(wi)){
+    const inf=wi[id],cap=s.wards[id].cap;
+    if(inf.proj/cap>=.9)alerts.push({hi:inf.proj/cap>=1,text:id+' forecast '+Math.round(inf.proj/cap*100)+'% full in 6h ('+inf.proj+'/'+cap+' beds).'});
+  }
+  if(pressure>1.2)alerts.push({hi:pressure>1.5,text:'ED demand is on track to exceed staffed bays within 3h.'});
+  if(app.level>1.35)alerts.push({hi:app.level>1.7,text:'Arrival surge detected: demand is about '+Math.round((app.level-1)*100)+'% above typical for this hour.'});
+  recs.sort((a,b)=>a.pri-b.pri);
+  return{recs,alerts,wi,pressure,longest,lam3};
+}
+const xrayUtil=s=>Math.min(.95,.2+.02*s.ed.treating.length);
+
+/* ---------- app state ---------- */
+let app;
+function init(){
+  if(app&&app.timer)clearInterval(app.timer);
+  pid=0;
+  const rng=mulberry32(26);
+  const initWards={};
+  WARDS.forEach(w=>{initWards[w.id]=Array.from({length:w.init},()=>genInpatient(rng,w.id));});
+  const hr=mulberry32(7);
+  const prof=Array.from({length:7},()=>Array(24).fill(0));
+  for(let wk=0;wk<6;wk++)for(let d=0;d<7;d++)for(let h=0;h<24;h++)prof[d][h]+=poisson(hr,BASE*PROFILE[h]*DOW[d])/6;
+  const hist=[];
+  for(let k=-24;k<0;k++){const c=clock(k);hist.push({t:k,n:poisson(hr,lamTrue(k)),exp:prof[c.d][c.h],f1:prof[c.d][c.h]});}
+  app={rng,prof,live:newSim(initWards),base:newSim(initWards),level:1,surgeUntil:-1,hist,mae:[],rejected:{},log:[],
+       auto:$('auto').checked,playing:false,timer:null,pending:[],alerts:[],an:null};
+  $('playBtn').textContent='Play';
+  refreshRecs(); render();
+}
+function refreshRecs(){
+  const r=analyze(app.live,forecast(app.live.t,12));
+  app.an=r; app.alerts=r.alerts;
+  app.pending=r.recs.filter(x=>!(app.rejected[x.id]>app.live.t));
+}
+function logit(msg){app.log.unshift({t:app.live.t,msg});if(app.log.length>12)app.log.pop();}
+function tick(){
+  const t=app.live.t,F=forecast(t,12),f1=F[0];
+  const surge=t<app.surgeUntil;
+  const n=poisson(app.rng,lamTrue(t)*(surge?SURGE_MULT:1));
+  const arr=[];for(let i=0;i<n;i++)arr.push(genPatient(app.rng,t));
+  step(app.live,structuredClone(arr));
+  step(app.base,structuredClone(arr));
+  const c=clock(t),exp=app.prof[c.d][c.h];
+  app.level=.6*app.level+.4*clamp(n/Math.max(exp,.5),.6,3);
+  app.hist.push({t,n,exp,f1});if(app.hist.length>48)app.hist.shift();
+  app.mae.push(Math.abs(n-f1));if(app.mae.length>24)app.mae.shift();
+  refreshRecs();
+  if(app.auto){
+    for(let i=0;i<6&&app.pending.length;i++){applyRec(app.pending[0],'Auto-approved (demo)');refreshRecs();}
+  }
+  render();
+}
+function applyRec(r,label){r.apply(app.live);logit((label||'Approved')+': '+r.title);}
+function setPlaying(on){
+  app.playing=on;clearInterval(app.timer);
+  if(on)app.timer=setInterval(tick,Number($('speed').value)===3?450:1400);
+  $('playBtn').textContent=on?'Pause':'Play';
+}
+
+/* ---------- rendering ---------- */
+let recSig='';
+function fmtMin(h){return Math.round(h*60)+' min';}
+function render(){
+  const s=app.live,e=s.ed,a=app.an;
+  $('clock').textContent=stamp(s.t);
+  // KPIs
+  const ctw=s.ct.backlog/Math.max(s.ct.cap,1);
+  $('kpis').innerHTML=
+    kpi(e.queue.length,'waiting in ED',e.queue.length>=8)+
+    kpi(Math.round(a.longest*60)+' min','longest wait',a.longest>=2)+
+    kpi(e.boarders.length,'admitted, boarding in ED',e.boarders.length>=3)+
+    kpi(Math.round(ctw*60)+' min','CT wait',ctw>=1);
+  // recommendations (keep buttons stable between ticks)
+  const sig=app.pending.map(r=>r.id).join('|');
+  if(sig!==recSig){
+    recSig=sig;
+    $('recs').innerHTML=app.pending.length?app.pending.map(recCard).join(''):
+      '<div class="empty">No actions needed right now. Press Surge to see how the system detects a bottleneck and recommends moves.</div>';
+  } else {
+    app.pending.forEach(r=>{
+      const el=document.querySelector('[data-rid="'+r.id+'"]');
+      if(el){el.querySelector('.why').textContent=r.reason;el.querySelector('.impact').textContent=r.impact;}
+    });
+  }
+  $('alerts').innerHTML=app.alerts.map(x=>'<div class="alert'+(x.hi?' hi':'')+'">'+x.text+'</div>').join('');
+  $('chart').innerHTML=chartSvg();
+  $('mae').textContent=app.mae.length?'Forecast error, last '+app.mae.length+'h: '+(app.mae.reduce((p,c)=>p+c,0)/app.mae.length).toFixed(1)+' arrivals/hr on average':'';
+  // wards
+  $('wards').innerHTML=Object.values(s.wards).map(w=>wardRow(w,a.wi[w.id])).join('');
+  // equipment
+  const stf=Math.min(e.bays,e.nurses*e.ratio);
+  $('equip').innerHTML=
+    eq('ED bays in use',(e.treating.length+e.boarders.length)/stf,e.treating.length+e.boarders.length+'/'+stf+' staffed')+
+    eq('CT scanners',s.ct.lastProc/Math.max(s.ct.cap,1),Math.round(s.ct.lastProc/Math.max(s.ct.cap,1)*100)+'%')+
+    eq('X-ray',xrayUtil(s),Math.round(xrayUtil(s)*100)+'%')+
+    eq('MRI (simulated)',.45+.12*Math.sin(s.t/2),Math.round((.45+.12*Math.sin(s.t/2))*100)+'%')+
+    '<p class="sub" style="margin-top:6px">ED nurses on shift: <b class="num">'+e.nurses+'</b>. CT capacity: <b class="num">'+s.ct.cap+'</b> scans/hr.</p>';
+  $('impact').innerHTML=impactTable();
+  $('log').innerHTML=app.log.length?app.log.map(l=>'<div><time class="num">'+stamp(l.t)+'</time>'+l.msg+'</div>').join(''):'<div class="sub">No decisions yet. Approvals and rejections appear here.</div>';
+}
+function kpi(v,l,hot){return '<div class="kpi'+(hot?' hot':'')+'"><b class="num">'+v+'</b><span>'+l+'</span></div>';}
+function recCard(r){
+  return '<article class="rec p'+r.pri+'" data-rid="'+r.id+'"><div class="rtop"><span class="pri">'+(r.pri===1?'Urgent':'Soon')+'</span><h3>'+r.title+'</h3></div>'+
+    '<p class="why">'+r.reason+'</p>'+
+    '<p class="meta"><b>Expected impact:</b> <span class="impact">'+r.impact+'</span></p>'+
+    '<p class="meta"><b>Safety check:</b> '+r.safety+'</p>'+
+    '<div class="acts"><button class="btn primary" data-act="approve" data-id="'+r.id+'">Approve</button><button class="btn" data-act="reject" data-id="'+r.id+'">Reject</button></div></article>';
+}
+function wardRow(w,inf){
+  const pct=inf.o/w.cap*100,cls=pct>=90?'red':pct>=75?'amber':'';
+  const nl=Math.round(inf.o/(w.nurses*w.ratio)*100);
+  return '<div class="ward"><div class="wh"><b>'+w.id+'</b><span class="num">'+inf.o+'/'+w.cap+' beds</span></div>'+
+    '<div class="track"><i class="fill '+cls+'" style="width:'+pct+'%"></i><b class="tick staff" style="left:'+(inf.staffed/w.cap*100)+'%"></b><b class="tick proj" style="left:'+clamp(inf.proj/w.cap*100,0,100)+'%"></b></div>'+
+    '<div class="wf num"><span>'+w.nurses+' nurses ('+nl+'% of safe load)</span><span>'+inf.ready+' ready to leave</span><span>6h forecast '+inf.proj+'</span>'+(inf.boarders?'<span class="boardtag">'+inf.boarders+' waiting in ED</span>':'')+'</div></div>';
+}
+function eq(name,u,label){
+  const p=clamp(u,0,1)*100,cls=p>=90?'red':p>=75?'amber':'';
+  return '<div class="eq"><span>'+name+'</span><div class="track"><i class="fill '+cls+'" style="width:'+p+'%"></i></div><span class="num">'+label+'</span></div>';
+}
+function chartSvg(){
+  const past=app.hist.slice(-24),F=forecast(app.live.t,12),t0=app.live.t;
+  const W=640,H=190,pl=26,pr=6,pt=10,pb=22,N=36,pw=W-pl-pr,ph=H-pt-pb;
+  const up=F.map(f=>f+1.64*Math.sqrt(f)),lo=F.map(f=>Math.max(0,f-1.64*Math.sqrt(f)));
+  const mx=Math.ceil(Math.max(8,...past.map(p=>p.n),...up)/2)*2;
+  const X=i=>pl+(i+.5)*pw/N,Y=v=>pt+ph-v/mx*ph;
+  let g='';
+  for(let v=0;v<=mx;v+=mx/4){g+='<line class="gl" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="tx" x="'+(pl-4)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+Math.round(v)+'</text>';}
+  past.forEach((p,i)=>{g+='<rect class="bar-a" x="'+(X(i)-pw/N*.35)+'" y="'+Y(p.n)+'" width="'+(pw/N*.7)+'" height="'+(ph-(Y(p.n)-pt))+'"/>';});
+  const expPts=[];
+  for(let i=0;i<N;i++){const t=t0-24+i,c=clock(t);expPts.push(X(i)+','+Y(app.prof[c.d][c.h]));}
+  g+='<polyline class="exp" points="'+expPts.join(' ')+'"/>';
+  const upP=F.map((f,k)=>X(24+k)+','+Y(up[k])),loP=F.map((f,k)=>X(24+k)+','+Y(lo[k])).reverse();
+  g+='<polygon class="band" points="'+upP.concat(loP).join(' ')+'"/>';
+  g+='<polyline class="fc" points="'+F.map((f,k)=>X(24+k)+','+Y(f)).join(' ')+'"/>';
+  g+='<line class="now" x1="'+(pl+24*pw/N)+'" x2="'+(pl+24*pw/N)+'" y1="'+pt+'" y2="'+(pt+ph)+'"/><text class="tx" x="'+(pl+24*pw/N+4)+'" y="'+(pt+10)+'">now</text>';
+  for(let i=0;i<N;i++){const c=clock(t0-24+i);if(c.h%6===0)g+='<text class="tx" x="'+X(i)+'" y="'+(H-6)+'" text-anchor="middle">'+String(c.h).padStart(2,'0')+':00</text>';}
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Arrivals per hour with forecast">'+g+'</svg>';
+}
+function metrics(s){
+  const e=s.ed;
+  return{wait:s.st.waitN?s.st.waitSum/s.st.waitN:0,board:s.st.board,imb:s.st.imbN?s.st.imbSum/s.st.imbN:0,
+    maxq:s.st.maxQ,now:e.queue.length?Math.max(...e.queue.map(p=>(s.t-p.arr)*60)):0};
+}
+function impactTable(){
+  const b=metrics(app.base),l=metrics(app.live);
+  const rows=[['Average wait for an ED bay (min)',b.wait,l.wait,0],['ED boarding (patient-hours)',b.board,l.board,0],
+    ['Ward load imbalance (std dev, pts)',b.imb,l.imb,1],['Peak ED queue (patients)',b.maxq,l.maxq,0],['Longest wait right now (min)',b.now,l.now,0]];
+  return '<table><tr><th></th><th>No action</th><th>With approvals</th><th>Change</th></tr>'+rows.map(r=>{
+    const d=r[1]>0?(r[2]-r[1])/r[1]*100:0,cls=Math.abs(d)<1?'':d<0?'good':'bad';
+    return '<tr><td>'+r[0]+'</td><td class="num">'+r[1].toFixed(r[3]?1:0)+'</td><td class="num">'+r[2].toFixed(r[3]?1:0)+'</td><td class="num '+cls+'">'+(Math.abs(d)<1?'0%':(d>0?'+':'')+d.toFixed(0)+'%')+'</td></tr>';
+  }).join('')+'</table>';
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const act=b.dataset.act;
+  if(act==='play')setPlaying(!app.playing);
+  else if(act==='step')tick();
+  else if(act==='reset')init();
+  else if(act==='surge'){app.surgeUntil=app.live.t+6;logit('Surge started: arrivals x'+SURGE_MULT+' for 6h');render();}
+  else if(act==='approve'||act==='reject'){
+    const r=app.pending.find(x=>x.id===b.dataset.id);if(!r)return;
+    if(act==='approve')applyRec(r,'Approved');
+    else{app.rejected[r.id]=app.live.t+6;logit('Rejected (hidden 6h): '+r.title);}
+    refreshRecs();render();
+  }
+});
+$('speed').addEventListener('change',()=>{if(app.playing)setPlaying(true);});
+$('auto').addEventListener('change',e=>{app.auto=e.target.checked;});
+init();
+</script>
+</body>
+</html>
